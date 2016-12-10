@@ -11,7 +11,6 @@
 #include <stdlib.h>
 #include <time.h>
 #include <math.h>
-#include "vec3.h"
 
 #ifdef _WIN32
 static DWORD lastTime;
