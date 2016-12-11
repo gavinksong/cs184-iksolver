@@ -44,6 +44,7 @@ int Height_global = 400;
 int Z_buffer_bit_depth = 128;
 float zoom = 2.f;
 Arm arm;
+Vector3f goal (1, 2, 3);
 
 inline float sqr(float x) { return x*x; }
 
@@ -162,6 +163,12 @@ void display( GLFWwindow* window )
     gluSphere (quad, .1, 5, 5);
     glPopMatrix ();
   }
+
+  glColor3f(0,1,1);
+  glPushMatrix ();
+  glTranslatef (goal(0), goal(1), goal(2));
+  gluSphere (quad, .1, 5, 5);
+  glPopMatrix ();
   
   glfwSwapBuffers(window);
 }
@@ -185,10 +192,9 @@ void size_callback(GLFWwindow* window, int width, int height)
 //****************************************************
 int main(int argc, char *argv[]) {
 
-  arm.addJoint (0, 0, 0);
   arm.addJoint (1, 0, 0);
-  arm.addJoint (1.5, 0, 0);
-  arm.addJoint (2, .5, 0);
+  arm.addJoint (2, 0, 0);
+  arm.addJoint (2.5, 0, 0);
 
   //This initializes glfw
   initializeRendering();
@@ -229,6 +235,7 @@ int main(int argc, char *argv[]) {
 
   while ( !glfwWindowShouldClose( window ) ) // infinite loop to draw object again and again
   {   // because once object is draw then window is terminated
+      arm.stepTowards (goal);
       display( window );
       
       if (auto_strech){

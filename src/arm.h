@@ -12,7 +12,7 @@ class Arm {
   private:
     Eigen::Vector3f tip;
     std::list<Eigen::Vector3f*> joints;
-    Eigen::Matrix<float, 3, Eigen::Dynamic> jacobian (void);
+    Eigen::Matrix3Xf jacobian (void);
   public:
     Arm (void) : Arm (0, 0, 0) {};
     Arm (float x, float y, float z);

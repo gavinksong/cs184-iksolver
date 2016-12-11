@@ -27,7 +27,7 @@ int Arm::numJoints (void) {
 }
 
 // TODO: Design a better interface. This is lazy.
-Matrix<float, 3, Eigen::Dynamic> Arm::getJoints (void) {
+Matrix3Xf Arm::getJoints (void) {
   Matrix3Xf joints (3, this->numJoints ());
   int i = 0;
   // For each joint (in outward order),
@@ -55,7 +55,7 @@ Matrix<float, 3, Dynamic> Arm::jacobian (void) {
        it != this->joints.end ();
        it++) {
     // Calculate the diff between joint and end effector.
-    Vector3f diff = this->tip - **it;
+    Vector3f diff = **it - this->tip;
     // Take the crossmat of the diff and append it to Jacobian.
     jacobian.block<3,3>(0,3*i++) = crossmat (diff);
   }
@@ -75,8 +75,8 @@ void Arm::applyRotations (Vector3f *expmaps) {
     // Apply the accumulated transform to the joint.
     **it = applyTransform (transform, joint);
     // Add joint rotation to transform.
-    transform = translation (joint) * rodriguez (expmaps[i++])
-      * translation (-joint) * transform;
+    transform *= translation (joint) * rodriguez (expmaps[i++])
+      * translation (-joint);
   }
   // Apply the final transform to the end effector.
   this->tip = applyTransform (transform, this->tip);
@@ -84,13 +84,13 @@ void Arm::applyRotations (Vector3f *expmaps) {
 
 void Arm::stepTowards (Vector3f goal) {
   // Take the jacobian.
-  Matrix<float, 3, Dynamic> jacobian = this->jacobian ();
+  Matrix3Xf jacobian = this->jacobian ();
   // Calculate error.
   Vector3f err = goal - this->tip;
-  // Solve error = jacobian * x.
-  Vector3f x = jacobian.colPivHouseholderQr ().solve (err);
+  // Solve least-squares for error = jacobian * x.
+  VectorXf x = jacobian.jacobiSvd(ComputeThinU|ComputeThinV).solve (err);
   // Turn x into array of Vector3fs.
-  int length = this->joints.size () - 1;
+  int length = this->joints.size ();
   Vector3f *expmaps = new Vector3f[length];
   for (int i = 0; i < length; i++) {
     expmaps[i] = x.block<3,1>(3*i,0);
@@ -110,12 +110,12 @@ Matrix3f crossmat (const Vector3f& v) {
 
 Matrix4f rodriguez (const Vector3f& r) {
   Matrix4f m4 = Matrix4f::Identity ();
-  float theta = r.dot (r);
-  Vector3f rn = r / theta;
+  float norm = sqrt (r.dot (r));
+  Vector3f rn = r / norm;
   Matrix3f cross = crossmat (rn);
   m4.block<3,3>(0,0) = rn * rn.transpose ()
-                       + sin (theta) * cross
-                       - cos (theta) * cross * cross;
+                       + sin (norm/100) * cross
+                       - cos (norm/100) * cross * cross;
   return m4;
 };
 
