@@ -11,6 +11,10 @@
 #include <stdlib.h>
 #include <time.h>
 #include <math.h>
+#include "arm.h"
+
+#include <GLUT/glut.h>
+#include <OpenGL/glu.h>
 
 #ifdef _WIN32
 static DWORD lastTime;
@@ -21,6 +25,7 @@ static struct timeval lastTime;
 #define PI 3.14159265 // Should be used from mathlib
 
 using namespace std;
+using namespace Eigen;
 
 /*
 For UC Berkeley's CS184 Fall 2016 course, assignment 3 (Bezier surfaces)
@@ -37,10 +42,10 @@ bool auto_strech = false;
 int Width_global = 400;
 int Height_global = 400;
 int Z_buffer_bit_depth = 128;
-float zoom = 0.5f;
+float zoom = 2.f;
+Arm arm;
 
 inline float sqr(float x) { return x*x; }
-
 
 //****************************************************
 // Simple init function
@@ -56,7 +61,6 @@ void initializeRendering()
 static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
     switch (key) {
-            
         case GLFW_KEY_ESCAPE:
         case GLFW_KEY_Q:
           glfwSetWindowShouldClose(window, GLFW_TRUE);
@@ -142,18 +146,24 @@ void display( GLFWwindow* window )
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);                // clear the color buffer (sets everything to black)
   glMatrixMode(GL_MODELVIEW);                  // indicate we are specifying camera transformations
   glLoadIdentity();                            // make sure transformation is "zero'd"
-  
-  //----------------------- code to draw objects --------------------------
-  glPushMatrix();
-  
 
-  glPopMatrix();
+  glOrtho(-5*zoom, 5*zoom, -5*zoom, 5*zoom, -5, 5);
+  glRotatef (rotation[0], 0, 1, 0);
+  glRotatef (rotation[1], 1, 0, 0);
+  glTranslatef (translation[0], translation[1], translation[2]);
+  
+  int numJoints = arm.numJoints ();
+  Matrix<float, 3, Dynamic> joints = arm.getJoints ();
+  glColor3f(1,0,0);
+  GLUquadric *quad = gluNewQuadric ();
+  for (int i = 0; i < numJoints; i++) {
+    glPushMatrix ();
+    glTranslatef (joints(0, i), joints(1, i), joints(2, i));
+    gluSphere (quad, .1, 5, 5);
+    glPopMatrix ();
+  }
   
   glfwSwapBuffers(window);
-
-  // note: check out glPolygonMode and glShadeModel 
-  // for wireframe and shading commands
-  
 }
 
 //****************************************************
@@ -165,11 +175,7 @@ void size_callback(GLFWwindow* window, int width, int height)
     // it returns the size, in pixels, of the framebuffer of the specified window
     glfwGetFramebufferSize(window, &Width_global, &Height_global);
     
-    glViewport(0, 0, Width_global, Height_global);
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    glOrtho(0, Width_global * zoom, 0, Height_global * zoom, 1, -1);
-    
+    glViewport(0, 0, Width_global, Height_global);    
     display(window);
 }
 
@@ -179,12 +185,10 @@ void size_callback(GLFWwindow* window, int width, int height)
 //****************************************************
 int main(int argc, char *argv[]) {
 
-  /* Command line args */
-
-  if (argc < 3) {
-    cerr << "Error: incorrect number of parameters (minimum 2).\n";
-    return -1;
-  }
+  arm.addJoint (0, 0, 0);
+  arm.addJoint (1, 0, 0);
+  arm.addJoint (1.5, 0, 0);
+  arm.addJoint (2, .5, 0);
 
   //This initializes glfw
   initializeRendering();
