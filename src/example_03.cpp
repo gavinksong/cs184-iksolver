@@ -48,7 +48,7 @@ Arm arm;
 float t = 0;
 
 Vector3f figure_eight (float t) {
-  return 2 * Vector3f (cos (t), sin (t), 0)
+  return 2 * Vector3f (cos (t), sin (t) * cos (t), 0)
          + Vector3f (0, 1, 2);
 }
 
@@ -229,8 +229,10 @@ void size_callback(GLFWwindow* window, int width, int height)
 int main(int argc, char *argv[]) {
 
   // Initialize arm
+  arm.addJoint (1, 0, 0);
+  arm.addJoint (2, 0, 0);
+  arm.addJoint (2.5, 0, 0);
   arm.addJoint (4, 0, 0);
-  arm.addJoint (7, 0, 0);
 
   //This initializes glfw
   initializeRendering();
