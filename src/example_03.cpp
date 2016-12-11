@@ -179,12 +179,12 @@ void display( GLFWwindow* window )
   for (int i = 0; i < numJoints-1; i++) {
     Vector3f joint = joints.block<3,1>(0,i);
     Vector3f body = joints.block<3,1>(0,i+1) - joint;
-    Vector3f cross = z.cross (body);
+    Vector3f axis = z.cross (body);
     float length = sqrt (body.dot (body));
-    float angle = asin (sqrt (cross.dot (cross)) / length) * 180.0 / PI;
+    float angle = acos (z.dot (body) / length) * 180.0 / PI;
     glPushMatrix ();
     glTranslatef (joint(0), joint(1), joint(2));
-    glRotatef (angle, cross(0), cross(1), cross(2));
+    glRotatef (angle, axis(0), axis(1), axis(2));
     gluCylinder (quad, .1, 0, length, 5, 5);
     glPopMatrix ();
   }
