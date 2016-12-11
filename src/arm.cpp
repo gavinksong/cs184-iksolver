@@ -22,17 +22,21 @@ Arm::~Arm (void) {
   }
 }
 
+int Arm::numJoints (void) {
+  return this->joints.size () + 1;
+}
+
 // TODO: Design a better interface. This is lazy.
 Matrix<float, 3, Eigen::Dynamic> Arm::getJoints (void) {
-  Matrix<float, 3, Dynamic> joints;
+  Matrix3Xf joints (3, this->numJoints ());
+  int i = 0;
   // For each joint (in outward order),
   for (list<Vector3f*>::iterator it = this->joints.begin ();
        it != this->joints.end ();
        it++) {
-    // Append it.
-    joints << joints, **it;
+    joints.block<3,1>(0,i++) = **it;
   }
-  joints << joints, this->tip;
+  joints.block<3,1>(0,i) = this->tip;
   return joints;
 };
 
@@ -44,7 +48,8 @@ void Arm::addJoint (float x, float y, float z) {
 
 Matrix<float, 3, Dynamic> Arm::jacobian (void) {
   // Initialize Jacobian.
-  Matrix<float, 3, Dynamic> jacobian;
+  Matrix3Xf jacobian (3, 3 * this->joints.size ());
+  int i = 0;
   // For each joint (in outward order),
   for (list<Vector3f*>::iterator it = this->joints.begin ();
        it != this->joints.end ();
@@ -52,7 +57,7 @@ Matrix<float, 3, Dynamic> Arm::jacobian (void) {
     // Calculate the diff between joint and end effector.
     Vector3f diff = this->tip - **it;
     // Take the crossmat of the diff and append it to Jacobian.
-    jacobian << jacobian, crossmat (diff);
+    jacobian.block<3,3>(0,3*i++) = crossmat (diff);
   }
   return jacobian;
 };
@@ -88,7 +93,7 @@ void Arm::stepTowards (Vector3f goal) {
   int length = this->joints.size () - 1;
   Vector3f *expmaps = new Vector3f[length];
   for (int i = 0; i < length; i++) {
-    expmaps[i] = x.block<3,1>(3*i+1,1);
+    expmaps[i] = x.block<3,1>(3*i,0);
   }
   // applyRotations.
   applyRotations (expmaps);
@@ -108,7 +113,7 @@ Matrix4f rodriguez (const Vector3f& r) {
   float theta = r.dot (r);
   Vector3f rn = r / theta;
   Matrix3f cross = crossmat (rn);
-  m4.block<3,3>(1,1) = rn * rn.transpose ()
+  m4.block<3,3>(0,0) = rn * rn.transpose ()
                        + sin (theta) * cross
                        - cos (theta) * cross * cross;
   return m4;
@@ -116,7 +121,7 @@ Matrix4f rodriguez (const Vector3f& r) {
 
 Matrix4f translation (const Vector3f& v) {
   Matrix4f m = Matrix4f::Identity ();
-  m.block<3,1>(1,4) = v;
+  m.block<3,1>(0,3) = v;
   return m;
 };
 

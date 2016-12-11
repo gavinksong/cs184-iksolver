@@ -20,6 +20,7 @@ class Arm {
     void addJoint (float x, float y, float z);
     void applyRotations (Eigen::Vector3f *expmaps);
     void stepTowards (Eigen::Vector3f goal);
+    int numJoints (void);
     Eigen::Matrix<float, 3, Eigen::Dynamic> getJoints (void);
 };
 
