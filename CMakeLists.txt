@@ -121,6 +121,7 @@ endif(WIN32)
 find_package(OpenGL REQUIRED)
 find_package(Threads REQUIRED)
 find_package(Freetype REQUIRED)
+find_package(GLUT REQUIRED)
 
 # glfw
 add_subdirectory(glfw-3.2.1)
@@ -130,6 +131,15 @@ include_directories(glfw-3.2.1/include)
 add_subdirectory(glew)
 include_directories(glew/include)
 # set_property( TARGET glew APPEND_STRING PROPERTY COMPILE_FLAGS -w )
+
+# GLUT
+if(NOT GLUT_FOUND)
+    set (GLUT_INCLUDE_DIRS glut-3.7.6)
+    set (GLUT_LIBRARY_DIRS glut-3.7.6)
+endif(NOT GLUT_FOUND)
+include_directories(${GLUT_INCLUDE_DIRS})
+link_directories(${GLUT_LIBRARY_DIRS})
+add_definitions(${GLUT_DEFINITIONS})
 
 #-------------------------------------------------------------------------------
 # Add subdirectories
