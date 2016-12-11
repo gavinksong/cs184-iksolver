@@ -4,6 +4,10 @@
 #include "Eigen/Dense"
 #include <list>
 
+// TODO: use vector or deque instead of list.
+// Only reason for using list here is because I thought it would
+// be confusing to use vector, but I changed my mind.
+
 class Arm {
   private:
     Eigen::Vector3f tip;
@@ -16,6 +20,7 @@ class Arm {
     void addJoint (float x, float y, float z);
     void applyRotations (Eigen::Vector3f *expmaps);
     void stepTowards (Eigen::Vector3f goal);
+    Eigen::Matrix<float, 3, Eigen::Dynamic> getJoints (void);
 };
 
 #endif
