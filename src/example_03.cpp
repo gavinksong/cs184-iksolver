@@ -42,13 +42,14 @@ bool auto_strech = false;
 int Width_global = 400;
 int Height_global = 400;
 int Z_buffer_bit_depth = 128;
-float zoom = 2.f;
+float zoom = .5f;
 
 Arm arm;
 float t = 0;
 
 Vector3f figure_eight (float t) {
-  return Vector3f (cos (t), sin (t) * cos (t), 2);
+  return 2 * Vector3f (cos (t), sin (t) * cos (t), 0)
+         + Vector3f (0, 1, 2);
 }
 
 inline float sqr(float x) { return x*x; }
@@ -153,14 +154,14 @@ void display( GLFWwindow* window )
   glMatrixMode(GL_MODELVIEW);                  // indicate we are specifying camera transformations
   glLoadIdentity();                            // make sure transformation is "zero'd"
 
-  glOrtho(-5*zoom, 5*zoom, -5*zoom, 5*zoom, -5, 5);
+  glOrtho(-5*zoom, 5*zoom, -5*zoom, 5*zoom, -10, 10);
   glRotatef (rotation[0], 0, 1, 0);
   glRotatef (rotation[1], 1, 0, 0);
   glTranslatef (translation[0], translation[1], translation[2]);
   
   int numJoints = arm.numJoints ();
   Matrix<float, 3, Dynamic> joints = arm.getJoints ();
-  glColor3f(1,0,0);
+  glColor3f(1,1,0);
   GLUquadric *quad = gluNewQuadric ();
   for (int i = 0; i < numJoints; i++) {
     glPushMatrix ();
@@ -170,11 +171,34 @@ void display( GLFWwindow* window )
   }
 
   glColor3f(0,1,1);
+  for (int i = 0; i < numJoints-1; i++) {
+    Vector3f joint = joints.block<3,1>(0,i);
+    Vector3f body = joints.block<3,1>(0,i+1) - joint;
+    Vector3f cross = body.cross (Vector3f (0, 0, 1));
+    float length = sqrt (body.dot (body));
+    float angle = -asin (sqrt (cross.dot (cross)) / length) * 180.0 / PI;
+    glPushMatrix ();
+    glTranslatef (joint(0), joint(1), joint(2));
+    glRotatef (angle, cross(0), cross(1), cross(2));
+    gluCylinder (quad, .1, 0, length, 5, 5);
+    glPopMatrix ();
+  }
+
+  glColor3f(1,0,0);
   glPushMatrix ();
   Vector3f goal = figure_eight (t);
   glTranslatef (goal(0), goal(1), goal(2));
-  gluSphere (quad, .1, 5, 5);
+  gluSphere (quad, .1, 3, 3);
   glPopMatrix ();
+
+  glColor3f(0,1,0);
+  for (float i = 0; i < 2 * PI; i += PI / 16) {
+    glPushMatrix ();
+    Vector3f crumb = figure_eight (i);
+    glTranslatef (crumb(0), crumb(1), crumb(2));
+    gluSphere (quad, .02, 3, 3);
+    glPopMatrix ();
+  }
   
   glfwSwapBuffers(window);
 }
@@ -200,6 +224,7 @@ int main(int argc, char *argv[]) {
   arm.addJoint (1, 0, 0);
   arm.addJoint (2, 0, 0);
   arm.addJoint (2.5, 0, 0);
+  arm.addJoint (4, 0, 0);
 
   //This initializes glfw
   initializeRendering();
