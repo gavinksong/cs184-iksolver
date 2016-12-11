@@ -1,6 +1,8 @@
 #include "arm.h"
 #include <cmath>
 
+#define STEP_SIZE .05
+
 using namespace Eigen;
 using namespace std;
 
@@ -114,8 +116,8 @@ Matrix4f rodriguez (const Vector3f& r) {
   Vector3f rn = r / norm;
   Matrix3f cross = crossmat (rn);
   m4.block<3,3>(0,0) = rn * rn.transpose ()
-                       + sin (norm/100) * cross
-                       - cos (norm/100) * cross * cross;
+                       + sin (norm * STEP_SIZE) * cross
+                       - cos (norm * STEP_SIZE) * cross * cross;
   return m4;
 };
 

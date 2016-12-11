@@ -43,8 +43,13 @@ int Width_global = 400;
 int Height_global = 400;
 int Z_buffer_bit_depth = 128;
 float zoom = 2.f;
+
 Arm arm;
-Vector3f goal (1, 2, 3);
+float t = 0;
+
+Vector3f figure_eight (float t) {
+  return Vector3f (cos (t), sin (t) * cos (t), 2);
+}
 
 inline float sqr(float x) { return x*x; }
 
@@ -166,6 +171,7 @@ void display( GLFWwindow* window )
 
   glColor3f(0,1,1);
   glPushMatrix ();
+  Vector3f goal = figure_eight (t);
   glTranslatef (goal(0), goal(1), goal(2));
   gluSphere (quad, .1, 5, 5);
   glPopMatrix ();
@@ -185,7 +191,6 @@ void size_callback(GLFWwindow* window, int width, int height)
     glViewport(0, 0, Width_global, Height_global);    
     display(window);
 }
-
 
 //****************************************************
 // the usual stuff, nothing exciting here
@@ -235,8 +240,9 @@ int main(int argc, char *argv[]) {
 
   while ( !glfwWindowShouldClose( window ) ) // infinite loop to draw object again and again
   {   // because once object is draw then window is terminated
-      arm.stepTowards (goal);
+      arm.stepTowards (figure_eight (t));
       display( window );
+      t += 0.01;
       
       if (auto_strech){
           glfwSetWindowSize(window, mode->width, mode->height);
