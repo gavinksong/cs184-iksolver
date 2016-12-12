@@ -14,7 +14,6 @@
 #include "arm.h"
 
 #include <GL/glut.h>
-#include <OpenGL/glu.h>
 
 #ifdef _WIN32
 static DWORD lastTime;
