@@ -1,0 +1,28 @@
+# CS 184 Fall 2016
+Instructor: James O'Brien
+
+Student name: Gavin Song
+Platform: OS X
+
+# USAGE
+Type into the Terminal the following step by step
+
+1. mkdir build
+2. cd build
+3. cmake ..
+4. make
+5. ./as4
+
+# Keyboard features
+1. 'ESC or Q': Exit
+2. 'S': Toggle between smooth and flat shading.
+3. 'W': Toggle wireframe mode.
+4. 'F': Full screen
+5. '↓': Rotate down
+6. '↑': Rotate up
+7. '←': Rotate left
+8. '→': Rotate right
+9. 'Shift + ↓': Translate down
+10. 'Shift + ↑': Translate up
+11. 'Shift + ←': Translate left
+12. 'Shift + →': Translate right
