@@ -13,7 +13,7 @@
 #include <math.h>
 #include "arm.h"
 
-#include <GLUT/glut.h>
+#include <GL/glut.h>
 #include <OpenGL/glu.h>
 
 #ifdef _WIN32

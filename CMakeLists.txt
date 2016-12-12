@@ -133,10 +133,6 @@ include_directories(glew/include)
 # set_property( TARGET glew APPEND_STRING PROPERTY COMPILE_FLAGS -w )
 
 # GLUT
-if(NOT GLUT_FOUND)
-    set (GLUT_INCLUDE_DIRS glut-3.7.6)
-    set (GLUT_LIBRARY_DIRS glut-3.7.6)
-endif(NOT GLUT_FOUND)
 include_directories(${GLUT_INCLUDE_DIRS})
 link_directories(${GLUT_LIBRARY_DIRS})
 add_definitions(${GLUT_DEFINITIONS})
